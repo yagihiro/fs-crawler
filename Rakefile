@@ -11,6 +11,7 @@ begin
     gem.authors = ["Hiroki Yagita"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_dependency "rb-inotify"
+    gem.add_dependency "eventmachine"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -33,7 +34,7 @@ task :spec => :check_dependencies
 
 task :default => :spec
 
-require 'rake/rdoctask'
+require 'hanna/rdoctask'
 Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 

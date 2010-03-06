@@ -5,12 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{fs-crawler}
-  s.version = "0.0.0"
+  s.version = "0.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Hiroki Yagita"]
-  s.date = %q{2010-03-01}
+  s.date = %q{2010-03-06}
+  s.default_executable = %q{fs-crawler}
   s.email = %q{yagihiro@gmail.com}
+  s.executables = ["fs-crawler"]
   s.extra_rdoc_files = [
     "LICENSE",
      "README.rdoc"
@@ -22,6 +24,7 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "fs-crawler.gemspec",
      "lib/fs-crawler.rb",
      "spec/fs-crawler_spec.rb",
      "spec/spec.opts",
@@ -30,8 +33,8 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/yagihiro/fs-crawler}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.rubygems_version = %q{1.3.6}
+  s.summary = %q{filesystem crawler}
   s.test_files = [
     "spec/spec_helper.rb",
      "spec/fs-crawler_spec.rb"
@@ -44,13 +47,16 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
       s.add_runtime_dependency(%q<rb-inotify>, [">= 0"])
+      s.add_runtime_dependency(%q<eventmachine>, [">= 0"])
     else
       s.add_dependency(%q<rspec>, [">= 1.2.9"])
       s.add_dependency(%q<rb-inotify>, [">= 0"])
+      s.add_dependency(%q<eventmachine>, [">= 0"])
     end
   else
     s.add_dependency(%q<rspec>, [">= 1.2.9"])
     s.add_dependency(%q<rb-inotify>, [">= 0"])
+    s.add_dependency(%q<eventmachine>, [">= 0"])
   end
 end
 
