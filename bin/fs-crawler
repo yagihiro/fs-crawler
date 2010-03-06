@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+require "optparse"
+require File.dirname(__FILE__) + "/../lib/fs-crawler"
+
+options = {
+  :port             => 30001,
+  :host             => "0.0.0.0",
+  :distination_port => 30002,
+  :distination_host => "0.0.0.0",
+  :config           => "./.fs-crawler.yml"
+}
+
+ARGV.clone.options do |o|
+  o.on("-p", "--port=port", Integer,
+       "Runs fs-crawler on the specified port", "Default: 30001") {|v| options[:port] = v }
+  o.on("-b", "--binding=ip", String,
+       "Binds fs-crawler to the specified ip", "Default: 0.0.0.0") {|v| options[:host] = v }
+  o.on("-P", "--distination-port=port", Integer,
+       "Runs distination target on the specified port", "Default: 30002") {|v| options[:distination_port] = v }
+  o.on("-B", "--distination-binding=ip", String,
+       "Binds distination target to the specified ip", "Default: 0.0.0.0") {|v| options[:distination_host] = v }
+  o.on("-c", "--config=file", String,
+       "Use custom configuration file", "Default: ./.fs-crawler.yml") {|v| options[:config] = v }
+  o.separator ""
+  o.on("-h", "--help", "Show this help message") { puts o; exit }
+  o.parse!
+end
+
+crawler = Crawler::Filesystem.new options
+crawler.run
