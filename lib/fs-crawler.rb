@@ -7,9 +7,7 @@ require "socket"
 require "time"
 require "yaml"
 
-
-#
-module Crawler
+module Crawler                  # :nodoc:
 
   # Configuration file format is yaml.
   # For example, below setting is linux kernel source code.
@@ -23,6 +21,9 @@ module Crawler
   #     - kernel
   #     - mm
   #
+  # == key list
+  # - path
+  # - ignore
   class Config
 
     # the path to config file.
@@ -46,10 +47,10 @@ module Crawler
       @path = path
       @config = YAML.load_file path
       @targets = @config["path"]
-      @ignores = @config["ignores"]
+      @ignores = @config["ignore"]
     rescue=>e
       @targets = ["."]
-      @ignores = [".git/"]
+      @ignores = [".git/", ".svn/"]
     end
     
   end
@@ -94,7 +95,7 @@ module Crawler
     # distination socket port or stdout stream.
     attr_accessor :stream
 
-    #
+    # Create a new Filesystem.
     def initialize options
       @options = options
       @port = @options[:port]
@@ -105,9 +106,10 @@ module Crawler
       init_notifier @config
     end
 
-    #
+    # start to watch filesystem event.
     def run
-      EM.run { EM.watch(@notifier.to_io) { @notifier.process } }
+#      EM.run { EM.watch(@notifier.to_io) { @notifier.process } }
+      @notifier.run
     end
 
     #
@@ -124,14 +126,13 @@ module Crawler
         Find.find(target) do |entry|
           path = Pathname.new(entry)
           abspath = path.realpath.to_s
+
+          # find ignore case...
           next if path.directory?
-          if @config.ignores.detect {|i| abspath =~ /#{i}/ }
-            puts "Ign '#{abspath}'"
-            next
-          end
+          next if @config.ignores.detect {|i| abspath =~ /#{i}/ }
 
+          # add watch list.
           puts "Add '#{abspath}' watching now"
-
           @notifier.watch(abspath, :all_events) do |e|
             # notify target was modified to distination.
             @stream.write "'#{e.absolute_name}' '#{Time.now.iso8601(3)}' #{e.flags.join('|')}\n"

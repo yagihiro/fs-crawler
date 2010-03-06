@@ -34,7 +34,11 @@ task :spec => :check_dependencies
 
 task :default => :spec
 
-require 'hanna/rdoctask'
+begin
+  require 'hanna/rdoctask'
+rescue
+  require 'rake/rdoctask'
+end
 Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
