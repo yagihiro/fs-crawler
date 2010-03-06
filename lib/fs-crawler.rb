@@ -1,7 +1,10 @@
 require "rubygems"
-require "rb-inotify"
 require "eventmachine"
+require "find"
+require "pathname"
+require "rb-inotify"
 require "socket"
+require "time"
 require "yaml"
 
 
@@ -32,14 +35,21 @@ module Crawler
     # @return [Array<String>]
     attr_accessor :targets
 
+    # specifying no crawing pathes.
+    #
+    # @return [Array<String>]
+    attr_accessor :ignores
+
     # Creates a new {Config}.
     # If config file does not exist, it will set current directory as default path.
     def initialize path
       @path = path
       @config = YAML.load_file path
       @targets = @config["path"]
+      @ignores = @config["ignores"]
     rescue=>e
       @targets = ["."]
+      @ignores = [".git/"]
     end
     
   end
@@ -66,40 +76,32 @@ module Crawler
               :all_events,
             ].freeze
 
-    #
+    # program argument hash.
     attr_accessor :options
 
-    #
+    # distination port number.
     attr_accessor :port
 
-    #
+    # distination IP address or host name.
     attr_accessor :ip
 
-    #
-    attr_accessor :dport
-
-    #
-    attr_accessor :dip
-
-    #
+    # Crawler::Config object.
     attr_accessor :config
 
-    #
+    # rb-inotify object.
     attr_accessor :notifier
 
-    #
+    # distination socket port or stdout stream.
     attr_accessor :stream
 
     #
     def initialize options
       @options = options
       @port = @options[:port]
-      @ip = @options[:ip]
-      @dport = @options[:dport]
-      @dip = @options[:dip]
+      @ip = @options[:host]
       @config = Config.new @options[:config]
 
-      init_connection @dip, @dport
+      init_connection @ip, @port
       init_notifier @config
     end
 
@@ -108,18 +110,32 @@ module Crawler
       EM.run { EM.watch(@notifier.to_io) { @notifier.process } }
     end
 
+    #
     def init_connection ip, port
       @stream = TCPSocket.open ip, port
     rescue
-      @stream = STDOUT
+      @stream = $defout
     end
 
+    #
     def init_notifier config
       @notifier = INotify::Notifier.new
       @config.targets.each do |target|
-        @notifier.watch(target, :all_events) do |e|
-          # notify target was modified to distination.
-          @stream << "#{e.absolute_name}, #{e.flags.join('|')}"
+        Find.find(target) do |entry|
+          path = Pathname.new(entry)
+          abspath = path.realpath.to_s
+          next if path.directory?
+          if @config.ignores.detect {|i| abspath =~ /#{i}/ }
+            puts "Ign '#{abspath}'"
+            next
+          end
+
+          puts "Add '#{abspath}' watching now"
+
+          @notifier.watch(abspath, :all_events) do |e|
+            # notify target was modified to distination.
+            @stream.write "'#{e.absolute_name}' '#{Time.now.iso8601(3)}' #{e.flags.join('|')}\n"
+          end
         end
       end
     end

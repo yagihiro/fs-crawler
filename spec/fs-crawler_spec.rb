@@ -15,5 +15,5 @@ describe "Crawler::Filesystem" do
   it "construction" do
     Crawler::Filesystem.new(@options).should_not be_nil
   end
-  
+
 end

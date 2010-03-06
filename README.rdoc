@@ -1,6 +1,7 @@
 = fs-crawler
 
-Description goes here.
+The fs-crawler is a server that tell filesystem event to remote application.
+Its application implements as a TCP server.
 
 == Note on Patches/Pull Requests
  
